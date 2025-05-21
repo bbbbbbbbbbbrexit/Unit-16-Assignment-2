@@ -5,7 +5,7 @@ global car_data
 global car_info_data
 
 
-filePath = "car_data.csv"
+filePath = "Car Rental Service/car_data.csv"
 car_data = np.loadtxt(filePath, delimiter=",", dtype=str, skiprows=1)
 
 
@@ -19,5 +19,6 @@ for i in range(len(car_data)):
     carList.append(carEntry)
 
 for row in carList:
-    print(row)
+    print(f"{row[1]} {row[2]}")
+    print(f"{row[3]} | {row[4]} | {row[5]} Seats | {row[6]} per day\n")
 

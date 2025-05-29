@@ -1,6 +1,6 @@
 # Importing the necessary libraries
 from clear_console import clr
-from universal_menu import universalMenu
+from universal_menus import universalMenu
 import numpy as np
 import re
 

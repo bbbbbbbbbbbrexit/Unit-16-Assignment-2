@@ -35,6 +35,7 @@ def carMenu(carList):
         elif option.isdigit():
             return option
         else:
+            clr()
             input("Invalid option. Press enter to continue.\n")
 
 global filePath

@@ -1,5 +1,5 @@
 0000,Debug,Account,debug,p,false
-0001,system,admin,epixcarz@email.com,ADMINpassword1605!,true
-0002,aiden,priestley-smith,aidenps@email.com,AnotherPassword0802!,false
-0003,j,j,jj@gmail.com,1234Ab!,false
-0004,john,smith,johns@bigcompany.co.uk,JSpassword2105!,false
+0001,Test,Admin,admin@email.com,Testpassword1234!,true
+0002,Test,User,user@email.com,Testpassword1234!,false
+0003,Test,deleted,deleted@email.com,Testpassword1234!,deleted
+0004,aiden,priestley-smith,aidenps0802@gmail.com,PSpassword0802!,False

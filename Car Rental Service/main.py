@@ -73,32 +73,32 @@ registerWidget = QWidget()
 dashboard_widget = QWidget()
 carWidget = QWidget()
 bookingWidget = QWidget()
+bookingDetailWidget = QWidget()
 accountWidget = QWidget()
 
 # ===============================
 # Menu Widget
 # ===============================
-menuWidget = QVBoxLayout(menuWidget)
-menuWidget.addWidget(QLabel("Choose an option:"))
-loginWidget = QPushButton("Login")
-registerWidget = QPushButton("Register")
-menuWidget.addWidget(loginWidget)
-menuWidget.addWidget(registerWidget)
+menuLayout = QVBoxLayout(menuWidget)
+menuLayout.addWidget(QLabel("Choose an option:"))
+loginButton = QPushButton("Login")
+registerButton = QPushButton("Register")
+menuLayout.addWidget(loginButton)
+menuLayout.addWidget(registerButton)
 
 # ===============================
 # Login Widget
 # ===============================
-loginWidget = QVBoxLayout(loginWidget)
+loginLayout = QVBoxLayout(loginWidget)
 emailInput = QLineEdit()
 emailInput.setPlaceholderText("Email")
 passwordInput = QLineEdit()
 passwordInput.setPlaceholderText("Password")
 passwordInput.setEchoMode(QLineEdit.Password)
 loginSubmit = QPushButton("Submit")
-loginWidget.addWidget(emailInput)
-loginWidget.addWidget(passwordInput)
-loginWidget.addWidget(loginSubmit)
-
+loginLayout.addWidget(emailInput)
+loginLayout.addWidget(passwordInput)
+loginLayout.addWidget(loginSubmit)
 
 # ===============================
 # Register Widget
@@ -128,8 +128,8 @@ for w in [firstNameInput, lastNameInput, registrationEmailInput, registrationPas
 # Dashboard Widget
 # ===============================
 dashboardLayout = QVBoxLayout(dashboard_widget)
-dashLabel = QLabel("Welcome! Choose an option:")
-dashboardLayout.addWidget(dashLabel)
+dash_label = QLabel("Welcome! Choose an option:")
+dashboardLayout.addWidget(dash_label)
 option1 = QPushButton("Browse Cars")
 option2_user = QPushButton("View My Bookings")
 option2_admin = QPushButton("Manage Users")
@@ -151,21 +151,35 @@ debugSpecial = QPushButton("Switch Debug Permissions")
 carLayout = QVBoxLayout(carWidget)
 carListDisplay = QListWidget()
 carLayout.addWidget(carListDisplay)
-rentButton_admin = QPushButton("Rent Selected Car")
+bookButton_user = QPushButton("Book Selected Car")
 assignButton_admin = QPushButton("Assign Car")
 returnButton_admin = QPushButton("Return Car")
-carBack = QPushButton("Back to Dashboard")
+backToDashboard = QPushButton("Back to Dashboard")
 
 # ===============================
 # Booking Widget
 # ===============================
 bookingLayout = QVBoxLayout(bookingWidget)
 bookingListDisplay = QListWidget()
-returnButton = QPushButton("Return Selected Car")
-bookingBack = QPushButton("Back to Dashboard")
+viewDetailButton = QPushButton("View Car Details")
+booking_back = QPushButton("Back to Dashboard")
 bookingLayout.addWidget(bookingListDisplay)
-bookingLayout.addWidget(returnButton)
-bookingLayout.addWidget(bookingBack)
+bookingLayout.addWidget(viewDetailButton)
+bookingLayout.addWidget(booking_back)
+
+# ===============================
+# Car Details Widget
+# ===============================
+bookingDetailLayout = QVBoxLayout()
+bookingDetailWidget.setLayout(bookingDetailLayout)
+bookingCarDetailLabel = QLabel()
+cancelBookingButton = QPushButton("Cancel Booking")
+backToBookingListButton = QPushButton("Back to My Bookings")
+bookingDetailLayout.addWidget(bookingCarDetailLabel)
+bookingDetailLayout.addWidget(cancelBookingButton)
+bookingDetailLayout.addWidget(backToBookingListButton)
+mainLayout.addWidget(bookingDetailWidget)
+
 
 # ===============================
 # Account Widget
@@ -173,10 +187,10 @@ bookingLayout.addWidget(bookingBack)
 accountLayout = QVBoxLayout(accountWidget)
 accountInfo = QLabel()
 changeEmail = QPushButton("Change Email")
-changePass = QPushButton("Change Password")
+changePasswordButton = QPushButton("Change Password")
 deleteAccount = QPushButton("Delete Account")
 accountBack = QPushButton("Back to Dashboard")
-for w in [accountInfo, changeEmail, changePass, deleteAccount, accountBack]:
+for w in [accountInfo, changeEmail, changePasswordButton, deleteAccount, accountBack]:
     accountLayout.addWidget(w)
 
 # ===============================
@@ -185,24 +199,21 @@ for w in [accountInfo, changeEmail, changePass, deleteAccount, accountBack]:
 
 manageUsersWidget = QWidget()
 manageUsersLayout = QVBoxLayout(manageUsersWidget)
-
 userListDisplay = QListWidget()
 manageUserActionButton = QPushButton("Manage Selected User")
-usersBack = QPushButton("Back to Dashboard")
-
+backFromUsers = QPushButton("Back to Dashboard")
 manageUsersLayout.addWidget(userListDisplay)
 manageUsersLayout.addWidget(manageUserActionButton)
-manageUsersLayout.addWidget(usersBack)
+manageUsersLayout.addWidget(backFromUsers)
 
 
 
 # Main Functions
 # -------------------------------
 
-# Update Menus
 def updateDashboard():
     # Welcome message including the right name
-    dashLabel.setText(f"Welcome {userData[1].capitalize()} {userData[2].capitalize()}!")
+    dash_label.setText(f"Welcome {userData[1].capitalize()} {userData[2].capitalize()}!")
 
     # Always show these and reset their labels
     option3.setText("Manage Account")
@@ -230,6 +241,8 @@ def updateDashboard():
     if userData[0] == "0000" and debugSpecial not in [dashboardLayout.itemAt(i).widget() for i in range(dashboardLayout.count())]:
         dashboardLayout.insertWidget(dashboardLayout.count() - 1, debugSpecial)
 
+
+
 def updateCarBrowser():
     # Clear the current list
     carListDisplay.clear()
@@ -243,6 +256,28 @@ def updateCarBrowser():
         for car in car_data:
             if car[1].lower() == "available":
                 carListDisplay.addItem(f"{car[0]} - {car[2]} {car[3]} | {car[5]} per day")
+
+
+def bookSelectedCar():
+    # Looks at the selected car
+    selected = carListDisplay.currentRow()
+    if selected == -1: # No car selected
+        showMessage("Error", "Select a car to rent.")
+        return
+
+    # Check if the selected car is available
+    available_cars = [car for car in car_data if car[1].lower() == "available"]
+    car_id = available_cars[selected][0]
+    for car in car_data:
+        if car[0] == car_id:
+            car[1] = "unavailable"
+            car[10] = userData[0]
+            break
+
+    # Save the changes, updates the ui and shows a message
+    saveCarData()
+    updateCarBrowser()
+    showMessage("Success", "Car rented successfully!")
 
 def updateBookingsList():
     bookingListDisplay.clear()
@@ -258,8 +293,8 @@ def updateBookingsList():
 
 def updateCarButtons():
     # Remove all current action buttons first
-    carLayout.removeWidget(rentButton_admin)
-    rentButton_admin.hide()
+    carLayout.removeWidget(bookButton_user)
+    bookButton_user.hide()
     carLayout.removeWidget(assignButton_admin)
     assignButton_admin.hide()
     carLayout.removeWidget(returnButton_admin)
@@ -272,66 +307,12 @@ def updateCarButtons():
         carLayout.addWidget(returnButton_admin)
         returnButton_admin.show()
     else:
-        carLayout.addWidget(rentButton_admin)
-        rentButton_admin.show()
+        carLayout.addWidget(bookButton_user)
+        bookButton_user.show()
 
     # Always show this
-    carLayout.addWidget(carBack)
-    carBack.show()
-
-def updateUserList():
-    userListDisplay.clear()
-    for user in user_data:
-        status = user[5].strip().capitalize()
-        nameDisplay = f"{user[1]} {user[2]}" if status != "Deleted" else "(Deleted User)"
-        userListDisplay.addItem(f"{user[0]} - {nameDisplay} | Status: {status}")
-
-# Load account info + login
-def loadAccountInfo():
-    accountInfo.setText(f"Name: {userData[1].capitalize()} {userData[2].capitalize()}\nEmail: {userData[3]}")
-
-def handleLogin():
-    global userData
-    email = emailInput.text().lower()
-    password = passwordInput.text()
-    for user in user_data:
-        if email == user[3] and password == user[4]:
-            if user[5].strip().lower() == "deleted":
-                showMessage("Error", "This account has been deleted and cannot be used.")
-                clearLoginFields()
-                return
-            userData = user
-            updateDashboard()
-            updateCarBrowser()
-            mainLayout.setCurrentWidget(dashboard_widget)
-            clearLoginFields()
-            return
-    showMessage("Error", "Invalid login credentials.")
-    clearLoginFields()
-
-
-
-
-def rentSelectedCar():
-    # Looks at the selected car
-    selected = carListDisplay.currentRow()
-    if selected == -1: # No car selected
-        showMessage("Error", "Select a car to rent.")
-        return
-
-    # Check if the selected car is available
-    available_cars = [car for car in car_data if car[1].lower() == "available"]
-    car_id = available_cars[selected][0]
-    for car in car_data:
-        if car[0] == car_id:
-            car[1] = "Unavailable"
-            car[10] = userData[0]
-            break
-
-    # Save the changes, updates the ui and shows a message
-    saveCarData()
-    updateCarBrowser()
-    showMessage("Success", "Car rented successfully!")
+    carLayout.addWidget(backToDashboard)
+    backToDashboard.show()
 
 def returnSelectedCar():
     selected = bookingListDisplay.currentRow()
@@ -358,6 +339,38 @@ def returnSelectedCar():
     updateBookingsList()
     updateCarBrowser()
     showMessage("Success", "Car returned.")
+    
+def view_booking_car_detail(index):
+    userBookedCars = []
+    for i in range(len(car_data)):
+        if car_data[i][1].lower() == "unavailable" and car_data[i][10] == userData[0]:
+            userBookedCars.append(car_data[i])
+
+    if index >= len(userBookedCars):
+        showMessage("Error", "Invalid selection.")
+        return
+
+    car = userBookedCars[index]
+    detailText = (
+        f"Car: {car[2]} {car[3]}\n"
+        f"Description: {car[8]}\n"
+        f"Type: {car[7]}\n"
+        f"Seats: {car[9]}\n"
+        f"Price per Day: {car[5]}"
+    )
+    bookingCarDetailLabel.setText(detailText)
+    mainLayout.setCurrentWidget(bookingDetailWidget)
+
+    car = userBookedCars[index]
+    detailText = (
+        f"Car: {car[2]} {car[3]}\n"
+        f"Description: {car[8]}\n"
+        f"Type: {car[7]}\n"
+        f"Seats: {car[9]}\n"
+        f"Price per Day: {car[5]}"
+    )
+    bookingCarDetailLabel.setText(detailText)
+    mainLayout.setCurrentWidget(bookingDetailWidget)
 
 def assignSelectedCarToUser():
     selected = carListDisplay.currentRow()
@@ -381,33 +394,34 @@ def assignSelectedCarToUser():
     selected_user, ok = QInputDialog.getItem(mainWindow, "Assign to User", "Select a user:", eligible_users, 0, False)
     if ok:
         user_id = selected_user.split(":")[0].strip()
-        car_data[car_idx][1] = "Unavailable"
+        car_data[car_idx][1] = "unavailable"
         car_data[car_idx][10] = user_id
         saveCarData()
         updateCarBrowser()
         showMessage("Success", f"Car {car_id} assigned to user {user_id}.")
 
-def returnSelectedCar():
-    selected = carListDisplay.currentRow()
-    if selected == -1:
-        showMessage("Error", "Select a car first.")
+def cancelBooking():
+    selected_row = bookingListDisplay.currentRow()
+    if selected_row == -1:
+        showMessage("Error", "Please select a car to cancel.")
         return
 
-    # Show only cars that are unavailable
-    unavailable_cars = [car for car in car_data if car[1].lower() == "unavailable"]
-    if selected >= len(unavailable_cars):
+    user_booked_cars = []
+    for i in range(len(car_data)):
+        if car_data[i][1].lower() == "unavailable" and car_data[i][10] == userData[0]:
+            user_booked_cars.append(i)
+
+    if selected_row >= len(user_booked_cars):
         showMessage("Error", "Invalid selection.")
         return
 
-    car_id = unavailable_cars[selected][0]
-    car_idx = next((i for i, c in enumerate(car_data) if c[0] == car_id), None)
-
-    if car_idx is not None:
-        car_data[car_idx][1] = "available"
-        car_data[car_idx][10] = ""  # clear assigned user
-        saveCarData()
-        updateCarBrowser()
-        showMessage("Success", f"Car {car_id} returned and marked available.")
+    car_index = user_booked_cars[selected_row]
+    car_data[car_index][1] = "available"
+    car_data[car_index][10] = ""
+    saveCarData()
+    showMessage("Success", "Booking successfully cancelled!")
+    updateBookingsList()
+    mainLayout.setCurrentWidget(bookingWidget)
 
 def changeEmailAddress():
     if userData[0] == "0000":
@@ -475,6 +489,13 @@ def deleteAccountConfirm():
     showMessage("Account Deleted", "Your account has been marked as deleted.")
     mainLayout.setCurrentWidget(menuWidget)
 
+def updateUserList():
+    userListDisplay.clear()
+    for user in user_data:
+        status = user[5].strip().capitalize()
+        name_display = f"{user[1]} {user[2]}" if status != "Deleted" else "(Deleted User)"
+        userListDisplay.addItem(f"{user[0]} - {name_display} | Status: {status}")
+
 def manageSelectedUser():
     selected = userListDisplay.currentRow()
     if selected == -1:
@@ -538,6 +559,28 @@ def manageSelectedUser():
         showMessage("Success", "Account restored.")
 
     updateUserList()
+
+def loadAccountInfo():
+    accountInfo.setText(f"Name: {userData[1].capitalize()} {userData[2].capitalize()}\nEmail: {userData[3]}")
+
+def handleLogin():
+    global userData
+    email = emailInput.text().lower()
+    password = passwordInput.text()
+    for user in user_data:
+        if email == user[3] and password == user[4]:
+            if user[5].strip().lower() == "deleted":
+                showMessage("Error", "This account has been deleted and cannot be used.")
+                clearLoginFields()
+                return
+            userData = user
+            updateDashboard()
+            updateCarBrowser()
+            mainLayout.setCurrentWidget(dashboard_widget)
+            clearLoginFields()
+            return
+    showMessage("Error", "Invalid login credentials.")
+    clearLoginFields()
 
 def handleRegister():
     global user_data
@@ -605,8 +648,8 @@ def toggleDebugAdmin():
 # ===============================
 # Button Connections
 # ===============================
-loginWidget.clicked.connect(lambda: [clearLoginFields(), mainLayout.setCurrentWidget(loginWidget)])
-registerWidget.clicked.connect(lambda: [clearRegisterFields(), mainLayout.setCurrentWidget(registerWidget)])
+loginButton.clicked.connect(lambda: [clearLoginFields(), mainLayout.setCurrentWidget(loginWidget)])
+registerButton.clicked.connect(lambda: [clearRegisterFields(), mainLayout.setCurrentWidget(registerWidget)])
 loginSubmit.clicked.connect(handleLogin)
 emailInput.returnPressed.connect(handleLogin)
 passwordInput.returnPressed.connect(handleLogin)
@@ -617,18 +660,20 @@ option2_admin.clicked.connect(lambda: [updateUserList(), mainLayout.setCurrentWi
 option3.clicked.connect(lambda: [loadAccountInfo(), mainLayout.setCurrentWidget(accountWidget)])
 option4.clicked.connect(lambda: mainLayout.setCurrentWidget(menuWidget))
 debugSpecial.clicked.connect(toggleDebugAdmin)
-rentButton_admin.clicked.connect(rentSelectedCar)
+bookButton_user.clicked.connect(bookSelectedCar)
 assignButton_admin.clicked.connect(assignSelectedCarToUser)
 returnButton_admin.clicked.connect(returnSelectedCar)
 changeEmail.clicked.connect(changeEmailAddress)
-changePass.clicked.connect(changePassword)
+changePasswordButton.clicked.connect(changePassword)
 deleteAccount.clicked.connect(deleteAccountConfirm)
-carBack.clicked.connect(lambda: mainLayout.setCurrentWidget(dashboard_widget))
-usersBack.clicked.connect(lambda: mainLayout.setCurrentWidget(dashboard_widget))
-manageUserActionButton.clicked.connect(manageSelectedUser)
-returnButton.clicked.connect(returnSelectedCar)
-bookingBack.clicked.connect(lambda: mainLayout.setCurrentWidget(dashboard_widget))
+backToDashboard.clicked.connect(lambda: mainLayout.setCurrentWidget(dashboard_widget))
+backFromUsers.clicked.connect(lambda: mainLayout.setCurrentWidget(dashboard_widget))
+manageUserActionButton.clicked.connect(manageSelectedUser)   
+booking_back.clicked.connect(lambda: mainLayout.setCurrentWidget(dashboard_widget))
 accountBack.clicked.connect(lambda: mainLayout.setCurrentWidget(dashboard_widget))
+viewDetailButton.clicked.connect(lambda: view_booking_car_detail(bookingListDisplay.currentRow()))
+backToBookingListButton.clicked.connect(lambda: mainLayout.setCurrentWidget(bookingWidget))
+cancelBookingButton.clicked.connect(cancelBooking)
 
 
 # ===============================

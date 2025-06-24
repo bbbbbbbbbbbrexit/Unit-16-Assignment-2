@@ -11,21 +11,22 @@ class Calculator(QWidget):
         self.createUI()
 
     def createUI(self):
-        # Main layout
+        # Set up the main layout
         mainLayout = QVBoxLayout()
         self.setLayout(mainLayout)
 
-        # Display
+        # Display for user input and results
         self.display = QLineEdit()
         self.display.setAlignment(Qt.AlignRight)
         self.display.setReadOnly(True)
         self.display.setStyleSheet("font-size: 24px;")
         mainLayout.addWidget(self.display)
 
-        # Button grid
+        # Sets up button grid layout
         grid = QGridLayout()
         mainLayout.addLayout(grid)
 
+        # Define their position
         buttons = [
             ('7', 0, 0), ('8', 0, 1), ('9', 0, 2), ('/', 0, 3),
             ('4', 1, 0), ('5', 1, 1), ('6', 1, 2), ('*', 1, 3),
@@ -34,6 +35,7 @@ class Calculator(QWidget):
             ('C', 4, 0, 1, 4)
         ]
 
+        # Make the buttons dynamically and add to the grid 
         for item in buttons:
             label = item[0]
             row = item[1]
@@ -45,18 +47,24 @@ class Calculator(QWidget):
             btn.setFixedSize(60, 60)
             btn.setStyleSheet("font-size: 18px;")
             grid.addWidget(btn, row, col, rowspan, colspan)
+            
             btn.clicked.connect(lambda checked, text=label: self.on_button_click(text))
 
 
     def on_button_click(self, text):
+        # Clear the display
         if text == 'C':
             self.display.clear()
+            
+        # Evaluate the expression
         elif text == '=':
             try:
                 result = str(eval(self.display.text()))
                 self.display.setText(result)
             except Exception:
                 self.display.setText("Error")
+                
+        # Add the button to the display
         else:
             self.display.setText(self.display.text() + text)
 

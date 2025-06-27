@@ -26,13 +26,13 @@ try:
 except Exception as e:
     print(f"Error loading car data: {e}")
     car_data = np.empty((0, 11), dtype=str)
-    
-filePath = "Car Rental Service/paymentData.csv"
+
+filePath = "Car Rental Service/payment_data.csv"
 try:
-    paymentData = np.loadtxt(filePath, delimiter=",", dtype=str)
+    payment_data = np.loadtxt(filePath, delimiter=",", dtype=str)
 except Exception as e:
     print(f"Payment data not found. Starting fresh. ({e})")
-    paymentData = np.empty((0, 5), dtype=str)
+    payment_data = np.empty((0, 6), dtype=str)
 
 userData = None  
 
@@ -49,8 +49,8 @@ def saveCarData():
     np.savetxt(filePath, car_data, fmt="%s", delimiter=",")
     
 def savePaymentData():
-    filePath = "Car Rental Service/paymentData.csv"
-    np.savetxt(filePath, paymentData, fmt="%s", delimiter=",")
+    filePath = "Car Rental Service/payment_data.csv"
+    np.savetxt(filePath, payment_data, fmt="%s", delimiter=",")
 
 def showMessage(title, text):
     msg = QMessageBox()
@@ -400,7 +400,7 @@ def viewBookCarDetail(index):
 
     # If car is reserved, allow confirming rental 
     if car[1].lower() == "reserved":
-        hasPayment = any(p[0] == userData[0] for p in paymentData)
+        hasPayment = any(p[0].strip() == userData[0].strip() for p in payment_data)
         if hasPayment:
             confirmRentalButton.show()
 
@@ -539,7 +539,7 @@ def changePassword():
                 return
             
 def managePaymentDetails():
-    global paymentData
+    global payment_data
 
     # Get the current users ID
     userID = userData[0]
@@ -550,7 +550,7 @@ def managePaymentDetails():
         return
 
     # Check if the user already has payment data
-    existingIndex = next((i for i, p in enumerate(paymentData) if p[0] == userID), None)
+    existingIndex = next((i for i, p in enumerate(payment_data) if p[0] == userID), None)
     
     # Get the users card number 
     number, ok2 = QInputDialog.getText(mainWindow, "Card Number", "Enter 16-digit card number:")
@@ -579,9 +579,9 @@ def managePaymentDetails():
 
     # If there is already payment info replace it if not add a new one
     if existingIndex is not None:
-        paymentData[existingIndex] = newEntry
+        payment_data[existingIndex] = newEntry
     else:
-        paymentData = np.append(paymentData, [newEntry], axis=0)
+        payment_data = np.append(payment_data, [newEntry], axis=0)
 
     # Save payment data and a message
     savePaymentData()
